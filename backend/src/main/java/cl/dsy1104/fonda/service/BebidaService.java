@@ -124,6 +124,9 @@ public class BebidaService {
             if (dto.getGradosAlcohol() != null) {
                 campos.put("gradosAlcohol", "debe ser nulo para bebidas sin alcohol");
             }
+            if (dto.getCertificada() != null) {
+                campos.put("certificada", "debe ser nulo para bebidas sin alcohol");
+            }
         }
 
         if (!campos.isEmpty()) {
@@ -132,7 +135,7 @@ public class BebidaService {
     }
 
     private void aplicarCambios(Bebida bebida, BebidaRequest dto) {
-        bebida.setNombre(dto.getNombre());
+        bebida.setNombre(dto.getNombre().trim());
         bebida.setTipo(dto.getTipo());
         bebida.setVolumenML(dto.getVolumenML());
         bebida.setStock(dto.getStock());
