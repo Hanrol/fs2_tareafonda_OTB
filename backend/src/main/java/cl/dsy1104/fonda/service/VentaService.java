@@ -30,7 +30,7 @@ public class VentaService {
 
     @Transactional(noRollbackFor = VentaRechazadaException.class)
     public VentaResponse registrar(VentaRequest dto) {
-        Bebida bebida = bebidaService.buscarOFallar(dto.getBebidaId());
+        Bebida bebida = bebidaService.buscarParaVentaOFallar(dto.getBebidaId());
         int unidades = dto.getUnidades();
 
 

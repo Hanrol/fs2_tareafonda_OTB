@@ -80,6 +80,13 @@ public class BebidaService {
                         "Bebida " + id + " no encontrada"));
     }
 
+    @Transactional
+    public Bebida buscarParaVentaOFallar(Long id) {
+        return bebidaRepository.findByIdForUpdate(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Bebida " + id + " no encontrada"));
+    }
+
     public Integer calcularPrecio(Bebida bebida) {
         if (bebida.getTipo() == TipoBebida.ALCOHOLICA) {
             int precio = PRECIO_BASE_ALCOHOLICA;
