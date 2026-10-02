@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { listarBebidas } from "../services/api.js";
+import { eliminarBebida, listarBebidas, restringirVenta } from "../services/api.js";
+import BebidaForm from "./BebidaForm.jsx";
 
 const moneda = new Intl.NumberFormat("es-CL", {
     style: "currency",
@@ -13,6 +14,31 @@ export default function BebidaList() {
     const [bebidas, setBebidas] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState("");
+    const [formulario, setFormulario] = useState(null);
+    const [ocupado, setOcupado] = useState(false);
+    const [aviso, setAviso] = useState("");
+    const [errorAccion, setErrorAccion] = useState("");
+
+    function recargar() {
+        setConsulta((actual) => ({ ...actual, intento: actual.intento + 1 }));
+    }
+
+    async function ejecutar(bebida, eliminar = false) {
+        if (eliminar && !window.confirm(`¿Eliminar ${bebida.nombre}? También se eliminarán sus ventas del historial.`)) return;
+        setOcupado(true);
+        setErrorAccion("");
+        setAviso("");
+        try {
+            if (eliminar) await eliminarBebida(bebida.id);
+            else await restringirVenta(bebida.id);
+            setAviso(eliminar ? "Bebida eliminada." : "Venta restringida.");
+            recargar();
+        } catch (fallo) {
+            setErrorAccion(fallo.mensaje || "No se pudo completar la operación.");
+        } finally {
+            setOcupado(false);
+        }
+    }
 
     useEffect(() => {
         let vigente = true;
@@ -46,6 +72,11 @@ export default function BebidaList() {
     return (
         <section className="mt-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6" aria-labelledby="catalogo-titulo">
                 <h2 id="catalogo-titulo" className="mb-4 text-xl font-semibold">Catálogo de bebidas</h2>
+                <button type="button" disabled={ocupado || formulario !== null} onClick={() => { setFormulario({}); setAviso(""); setErrorAccion(""); }} className="mb-4 rounded-lg bg-blue-700 px-4 py-2 text-white hover:bg-blue-800">Nueva bebida</button>
+                {aviso && <p role="status" className="mb-4 rounded-lg bg-emerald-50 p-3 text-emerald-800">{aviso}</p>}
+                {errorAccion && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-3 text-red-800">{errorAccion}</p>}
+                {formulario !== null && <BebidaForm key={formulario.id ?? "nueva"} bebida={formulario.id ? formulario : null}
+                    onCancelar={() => setFormulario(null)} onGuardar={() => { setFormulario(null); setAviso("Bebida guardada."); recargar(); }} />}
                 <form onSubmit={buscar} className="mb-4">
                     <label className="mb-2 block text-sm font-medium" htmlFor="filtro-nombre">Buscar por nombre</label>
                     <div className="flex flex-wrap gap-2">
@@ -93,6 +124,7 @@ export default function BebidaList() {
                                 <th scope="col">Stock</th>
                                 <th scope="col">Precio</th>
                                 <th scope="col">Venta</th>
+                                <th scope="col">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,6 +139,13 @@ export default function BebidaList() {
                                         <span className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${bebida.ventaRestringida ? "bg-red-100 text-red-800" : "bg-emerald-100 text-emerald-800"}`}>
                                             {bebida.ventaRestringida ? "Restringida" : "Permitida"}
                                         </span>
+                                    </td>
+                                    <td>
+                                        <div className="flex flex-wrap gap-2">
+                                            <button type="button" disabled={ocupado || formulario !== null} onClick={() => { setFormulario(bebida); setAviso(""); setErrorAccion(""); }} className="rounded border border-blue-300 px-2 py-1 text-blue-800">Editar</button>
+                                            <button type="button" disabled={ocupado || formulario !== null || bebida.ventaRestringida} onClick={() => ejecutar(bebida)} className="rounded border border-amber-300 px-2 py-1 text-amber-800">Restringir</button>
+                                            <button type="button" disabled={ocupado || formulario !== null} onClick={() => ejecutar(bebida, true)} className="rounded border border-red-300 px-2 py-1 text-red-800">Eliminar</button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
