@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@layer base {
+    body {
+        @apply bg-slate-50 text-slate-900 antialiased;
+    }
+    button {
+        @apply cursor-pointer disabled:cursor-not-allowed disabled:opacity-50;
+    }
+    button:focus-visible {
+        @apply outline-2 outline-offset-2 outline-blue-600;
+    }
+    th, td {
+        @apply px-4 py-3;
+    }
+}
