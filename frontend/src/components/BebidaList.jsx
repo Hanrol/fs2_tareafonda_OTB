@@ -8,7 +8,7 @@ const moneda = new Intl.NumberFormat("es-CL", {
     maximumFractionDigits: 0,
 });
 
-export default function BebidaList() {
+export default function BebidaList({ revision = 0, onCambio = () => {} }) {
     const [nombre, setNombre] = useState("");
     const [consulta, setConsulta] = useState({ nombre: "", intento: 0 });
     const [bebidas, setBebidas] = useState([]);
@@ -21,6 +21,7 @@ export default function BebidaList() {
 
     function recargar() {
         setConsulta((actual) => ({ ...actual, intento: actual.intento + 1 }));
+        onCambio();
     }
 
     async function ejecutar(bebida, eliminar = false) {
@@ -57,7 +58,7 @@ export default function BebidaList() {
         return () => {
             vigente = false;
         };
-    }, [consulta]);
+    }, [consulta, revision]);
 
     function buscar(evento) {
         evento.preventDefault();
